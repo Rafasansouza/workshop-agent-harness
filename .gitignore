@@ -9,6 +9,10 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
+# Node/Frontend
+node_modules/
+dist/
+
 # # Dataset sintético regenerável (seed/generate.py é a fonte da verdade)
 # seed/data/
 
