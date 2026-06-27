@@ -134,7 +134,7 @@ cp .env.example .env
 Edite o `.env` e adicione sua chave da OpenAI:
 
 ```env
-OPENAI_API_KEY=sk-...
+OPENAI_API_KEY=...
 ```
 
 ### Passo 3: Suba a infraestrutura
