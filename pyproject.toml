@@ -12,6 +12,7 @@ dependencies = [
     "pydantic>=2.7",
     "pydantic-settings>=2.3",
     "alembic>=1.18.4",
+    "psycopg2-binary>=2.9",
     "faker>=40.23.0",
     "qdrant-client>=1.12",
     "minio>=7.2",
