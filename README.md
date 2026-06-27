@@ -4,21 +4,21 @@
 
 # Workshop Agent Harness · Jornada de Dados
 
-**Projeto desenvolvido por [Rafael Souza](https://github.com/Rafasansouza)** durante o Workshop de **Agent Harness** da **Jornada de Dados**.
+Minha implementação do Workshop de **Agent Harness** da **Jornada de Dados**, ministrado por [Caio Oliveira](https://github.com/caio-moliveira).
 
-Como organizar o repositório e os arquivos que o Claude Code usa — **rules, hooks, MCP, subagents e skills** — **antes** de escrever a primeira linha de código, conduzindo um projeto real do PRD às issues e à implementação medida.
+Parti do [workspace original do workshop](https://github.com/caio-moliveira/workshop-agent-harness) e dei continuidade à implementação usando **Claude Code**, aplicando na prática os conceitos de **rules, hooks, MCP, subagents e skills**.
 
-[**🎓 Workshop**](https://lp.suajornadadedados.com.br/agent-harness) • [**📖 Documentação**](https://github.com/caio-moliveira/workshop-agent-harness) • [**🌐 Site Oficial**](https://suajornadadedados.com.br/)
+[**🎓 Workshop**](https://lp.suajornadadedados.com.br/agent-harness) • [**📖 Repo Original**](https://github.com/caio-moliveira/workshop-agent-harness) • [**🌐 Jornada de Dados**](https://suajornadadedados.com.br/)
 
 </div>
 
 ---
 
-## Autor
+## Sobre este projeto
 
-**Rafael Souza** — [@Rafasansouza](https://github.com/Rafasansouza)
+Este repositório é minha versão do projeto desenvolvido durante o Workshop Agent Harness. O workshop foi criado e ministrado pelo [Caio Oliveira](https://github.com/caio-moliveira), que preparou toda a estrutura inicial do harness (`.claude/`, PRD, skills).
 
-Este projeto foi desenvolvido como parte do Workshop Agent Harness da Jornada de Dados, aplicando os conceitos de **agent harness** para construir um assistente analítico de vendas completo.
+A partir dessa base, implementei as 11 issues do PRD usando **Claude Code** como assistente de desenvolvimento, seguindo a metodologia do workshop: do PRD às issues prontas para um agente implementar.
 
 ---
 
