@@ -4,13 +4,21 @@
 
 # Workshop Agent Harness · Jornada de Dados
 
-Workshop de **Agent Harness** da **Jornada de Dados**: como organizar o repositório e os arquivos
-que o Claude Code usa — **rules, hooks, MCP, subagents e skills** — **antes** de escrever a primeira
-linha de código, conduzindo um projeto real do PRD às issues e à implementação medida.
+**Projeto desenvolvido por [Rafael Souza](https://github.com/Rafasansouza)** durante o Workshop de **Agent Harness** da **Jornada de Dados**.
+
+Como organizar o repositório e os arquivos que o Claude Code usa — **rules, hooks, MCP, subagents e skills** — **antes** de escrever a primeira linha de código, conduzindo um projeto real do PRD às issues e à implementação medida.
 
 [**🎓 Workshop**](https://lp.suajornadadedados.com.br/agent-harness) • [**📖 Documentação**](https://github.com/caio-moliveira/workshop-agent-harness) • [**🌐 Site Oficial**](https://suajornadadedados.com.br/)
 
 </div>
+
+---
+
+## Autor
+
+**Rafael Souza** — [@Rafasansouza](https://github.com/Rafasansouza)
+
+Este projeto foi desenvolvido como parte do Workshop Agent Harness da Jornada de Dados, aplicando os conceitos de **agent harness** para construir um assistente analítico de vendas completo.
 
 ---
 
@@ -24,47 +32,23 @@ qualitativa** (Qdrant) para gerar **relatórios de melhoria de vendas fundamenta
 uma ideia solta e chegar em issues prontas para um agente implementar, governado por um **agent
 harness** que codifica os padrões, as validações e as métricas de um time de verdade.
 
-> Este README conta **como chegamos até aqui**: o que já estava posto, o harness que montamos à mão
-> e os próximos passos — da *ideia* → *PRD* → *harness* → *issues* → *implementação medida*.
+---
+
+## Stack Tecnológica
+
+| Camada | Tecnologia |
+|--------|------------|
+| **Backend** | FastAPI (Python 3.13) + LangGraph |
+| **Frontend** | React + TypeScript + Vite |
+| **Banco de Dados** | PostgreSQL (vendas + metas) |
+| **Vector Store** | Qdrant (busca semântica) |
+| **Object Storage** | MinIO (documentos) |
+| **Proxy** | nginx (SSE streaming) |
+| **Embeddings** | OpenAI text-embedding-3-large |
 
 ---
 
-## 1. O que já está posto (antes do workshop)
-
-Quatro coisas foram preparadas **antes** de a parte ao vivo começar:
-
-| O quê | Onde | Estado |
-|---|---|---|
-| **Ingestão dos dados** | `seed/` | ✅ ~5 anos de vendas no Postgres + corpus qualitativo no MinIO/Qdrant, com narrativas plantadas (`seed/NARRATIVAS.md`) |
-| **Stack local (docker-compose)** | `docker-compose.yml` | ✅ `postgres` · `qdrant` · `minio` · `api` (FastAPI) · `nginx` |
-| **Ambiente git** | `.git`, `.gitignore`, `.env.example` | ✅ repositório configurado com `uv` (Python 3.13) |
-| **Download das SKILLS** | `skills-lock.json` + `.claude/skills/` | ✅ fontes abaixo |
-
-### Fontes das skills (download)
-
-As skills foram baixadas e travadas em `skills-lock.json` (fonte + `skillPath` + hash de cada uma):
-
-- **Matt Pocock** — skills de processo (`grill-me`, `to-prd`, `to-issues`,
-  `tdd`, `diagnose`, `triage`, `handoff`, `write-a-skill`, `zoom-out`…):
-  <https://github.com/mattpocock/skills>
-- **LangChain / LangGraph / Deep Agents** (`ecosystem-primer`, `langchain-*`, `langgraph-*`,
-  `deep-agents-*`, `managed-deep-agents`, `swarm`): <https://github.com/langchain-ai/langchain-skills>
-- **FastAPI patterns** (`fastapi-patterns`): <https://github.com/affaan-m/ECC>
-- **React** (`react`): <https://github.com/lobehub/lobehub> · **React UI patterns** (`react-ui-patterns`):
-  <https://github.com/sickn33/antigravity-awesome-skills>
-- **UI/UX Pro Max** (`ui-ux-pro-max`): <https://github.com/nexu-io/open-design>
-
-> **`harness-architect` é uma skill _própria_ da equipe** (não está no `skills-lock.json`): ela
-> automatiza o scaffold do `.claude/` a partir do PRD. No workshop, porém, **montamos o harness à
-> mão** — o objetivo é entender o que cada arquivo faz e por que existe, não gerá-los no escuro. A
-> skill fica como a automação opcional, depois que os conceitos estão claros.
-
----
-
-## 2. Do PRD ao código
-
-Cada passo consome o artefato do anterior. A ordem importa: **alinhar antes de gerar, harness antes
-de codar, validar a cada fatia.**
+## Do PRD ao código — Status
 
 | # | Passo | Origem | Entra | Sai | Estado |
 |---|---|---|---|---|---|
@@ -72,103 +56,203 @@ de codar, validar a cada fatia.**
 | 1 | `/grill-me` | Matt Pocock | `ideia.md` | entendimento afiado | ✅ |
 | 2 | `/to-prd` | Matt Pocock | sessão do grill | **`PRD.md`** | ✅ |
 | 3 | **harness à mão** | nós (ao vivo) | `PRD.md` | `.claude/` (rules · hooks · MCP · subagente · comandos · métricas) | ✅ |
-| 4 | `/to-issues` | Matt Pocock | `PRD.md` | issues *ready-for-agent* | ⬜ |
-| 5 | implementar | — | issues | código (gate + revisor + scorecard) | ⬜ |
+| 4 | `/to-issues` | Matt Pocock | `PRD.md` | issues *ready-for-agent* | ✅ |
+| 5 | implementar | — | issues | código (gate + revisor + scorecard) | ✅ |
 
-**0. `ideia.md` — a semente.** Documento solto com a ideia inicial. Fica **local e não versionado**,
-mas é a origem de toda a cadeia.
+### Issues Implementadas
 
-**1. `/grill-me` — interrogar a ideia.** Entrevista o autor sem dó até fechar cada ramo da árvore de
-decisões. Não gera arquivo: afia o entendimento que vai alimentar o PRD.
+| Issue | Descrição | Status |
+|-------|-----------|--------|
+| #1 | Esqueleto FastAPI + nginx | ✅ |
+| #2 | Tool run_sql com guardrails | ✅ |
+| #3 | Tool search (Qdrant) | ✅ |
+| #4 | Nó planejar | ✅ |
+| #5 | Nó perna_quantitativa | ✅ |
+| #6 | Nó enriquecer | ✅ |
+| #7 | Nó relatorio | ✅ |
+| #8 | Endpoint /chat SSE | ✅ |
+| #9 | Frontend React chat | ✅ |
+| #10 | Fontes inspecionáveis | ✅ |
+| #11 | Persistência harness | ✅ |
 
-**2. `/to-prd` — consolidar o PRD.** Sintetiza a conversa num PRD, sem nova entrevista.
-→ **Output: `PRD.md`** — Problem/Solution, user stories, Implementation/Testing Decisions, Out of Scope.
+**Validação:** 80 testes passando (ruff + mypy + pytest)
 
-**3. O harness, à mão — estruturar o `.claude/`** *(centro do workshop)*. Lendo o `PRD.md`, montamos
-os arquivos do harness **um a um**, entendendo o papel de cada peça. Detalhe na seção 3.
-→ **Output:** `CLAUDE.md`, `.claude/rules/`, `.claude/agents/`, `.claude/commands/`,
-`.claude/settings.json` (hooks + permissões), `.mcp.json` e `metrics/`.
+---
 
-**4. `/to-issues` — fatiar o PRD.** Quebra o `PRD.md` em issues *ready-for-agent* (fatias verticais
-tracer-bullet), cada uma independentemente "grabbable". O tracker (GitHub via `gh`) e o vocabulário de
-labels já estão documentados no `CLAUDE.md` — não há passo de setup separado.
+## Estrutura do Repositório
 
-**5. Implementar.** O ciclo roda fatia a fatia com **gate automático** (hook: `ruff` + `mypy` +
-`pytest`), **revisão** pelo subagente `revisor-codigo` e **métricas de entrega** medidas contra a
-Definição de Pronto (`/scorecard`).
+```
+├── backend/                    # FastAPI + LangGraph
+│   ├── app/                    #   routers + services
+│   ├── agent/                  #   grafo, nós e tools
+│   │   ├── nodes/              #     planejar, perna_quantitativa, enriquecer, relatorio
+│   │   └── tools/              #     run_sql, search
+│   ├── harness/                #   persistência de runs (SQLAlchemy)
+│   └── tests/                  #   80 testes
+├── frontend/                   # React + TypeScript + Vite
+│   └── src/
+│       ├── api/                #   tipos e cliente SSE
+│       └── components/         #   Chat, Report, Estados, Inspection panels
+├── infra/
+│   └── nginx/                  # proxy com suporte SSE
+├── alembic/                    # migrations
+├── seed/                       # ingestão (dados + corpus)
+├── .claude/                    # agent harness
+│   ├── rules/                  #   padrões por área
+│   ├── agents/                 #   revisor-codigo
+│   ├── commands/               #   /validar, /scorecard
+│   └── skills/                 #   skills baixadas
+├── CLAUDE.md                   # índice durável do projeto
+├── PRD.md                      # PRD consolidado
+└── docker-compose.yml          # stack completa
+```
+
+---
+
+## 🚀 Como Executar o Projeto
+
+### Pré-requisitos
+
+- **Docker** e **Docker Compose**
+- **Python 3.13** com [**uv**](https://docs.astral.sh/uv/)
+- **Node.js 18+** e **npm**
+- **Chave da API OpenAI** (para embeddings)
+
+### Passo 1: Clone o repositório
 
 ```bash
-# o harness já está montado (.claude/). Próximos comandos do workshop:
-/to-issues                    # PRD.md -> issues ready-for-agent           (passo 4)
-# implementar issue a issue: gate (hook) + /validar + revisor-codigo + /scorecard
+git clone https://github.com/Rafasansouza/workshop-agent-harness.git
+cd workshop-agent-harness
 ```
 
----
-
-## 3. O harness que montamos (`.claude/`)
-
-Não é um template genérico: cada arquivo amarra um **padrão do time** a um **comportamento que
-queremos garantir**.
-
-| Peça | Arquivo | O que faz |
-|---|---|---|
-| **rules** | `.claude/rules/*.md` | Padrões por área (estilo, backend, agente, frontend, testes), *path-scoped* via `paths:` — carregam só quando o agente toca a área. |
-| **hooks** | `.claude/settings.json` | `PostToolUse` aplica `ruff` a cada edição; `Stop` roda `ruff + mypy + pytest` e **bloqueia** se vermelho. Mais as permissões (perímetro). |
-| **MCP** | `.mcp.json` | Postgres **somente-leitura** (`--access-mode=restricted`) para o agente inspecionar o schema real antes de escrever SQL. |
-| **subagent** | `.claude/agents/revisor-codigo.md` | Revisor que checa o diff contra as rules + invariantes, em janela fresca (verificação *soft*). |
-| **commands** | `.claude/commands/` | `/validar` (gate invocável) e `/scorecard` (métricas de entrega). |
-| **skills** | `.claude/skills/` | As skills baixadas (Matt, LangChain…) — procedimentos reutilizáveis carregados sob demanda. |
-| **métricas** | `.claude/rules/definicao-de-pronto.md` + `metrics/` | Definição de Pronto (contrato mensurável de "entregue") + `entregas.jsonl`, agregados pelo `/scorecard`. |
-
-O `CLAUDE.md` na raiz é o **índice durável** do projeto (invariantes, stack, comandos), carregado em
-toda sessão. Invariantes que o harness protege: `negocio` é **somente leitura**; grafo LangGraph
-**determinístico**; enriquecimento Qdrant **sempre filtrado** por `periodo_referencia`; toda
-recomendação **amarrada a uma fonte**; stores pré-populados são **sagrados**.
-
----
-
-## 4. Estrutura do repositório
-
-```
-agent-harness-apresentacao.html  # apresentação do workshop
-PRD.md                           # PRD consolidado (output do /to-prd) — base para as issues
-CLAUDE.md                        # índice durável do projeto (carregado toda sessão)
-docker-compose.yml               # stack: postgres, qdrant, minio, api (FastAPI), nginx
-.env.example                     # variáveis (copie para .env antes de subir)
-pyproject.toml                   # deps (uv) · uv.lock
-skills-lock.json                 # lock das skills baixadas (fonte + skillPath + hash)
-.mcp.json                        # MCP: Postgres somente-leitura
-seed/                            # ingestão: dataset sintético + corpus (offline, já executada)
-  schema.sql                     #   DDL do schema `negocio` (dimensões + fatos + metas)
-  generate.py · load.py          #   gerador determinístico -> CSVs -> COPY no Postgres
-  corpus/ · ingest.py            #   docs .md (diagnostico/ + prescricao/) -> MinIO + Qdrant
-  NARRATIVAS.md · evals/golden/  #   enredo das narrativas + golden dataset derivado
-.claude/
-  settings.json                  #   hooks (estilo + gate de validação) + permissões
-  rules/                         #   padrões por área (path-scoped via `paths:`)
-  agents/revisor-codigo.md       #   subagente revisor (verificação soft)
-  commands/                      #   /validar · /scorecard
-  skills/                        #   skills baixadas + harness-architect (própria)
-metrics/                         # métricas de entrega: entregas.jsonl + README (schema)
-```
-
-> `backend/` (FastAPI + grafo LangGraph) e `frontend/` (React + Vite) **nascem das issues** durante
-> a implementação — são o resultado do passo 6, não pré-requisito.
-
----
-
-## 5. Rodar localmente (ingestão)
+### Passo 2: Configure as variáveis de ambiente
 
 ```bash
-cp .env.example .env                          # ajuste os segredos (POSTGRES_PASSWORD etc.)
-docker compose up -d postgres qdrant minio    # stores no ar
-
-# 1) Postgres (vendas + metas)
-uv run python seed/generate.py                # gera seed/data/*.csv (regenerável; não versionado)
-uv run python seed/load.py                    # cria negocio.* e carrega; sanity das narrativas
-
-# 2) Corpus qualitativo (MinIO -> Qdrant)
-uv run python seed/ingest.py                  # upload + embed + index; verifica buscas filtradas
+cp .env.example .env
 ```
 
-Consoles: **MinIO** em <http://localhost:9001> · **Qdrant** em <http://localhost:6333/dashboard>.
+Edite o `.env` e adicione sua chave da OpenAI:
+
+```env
+OPENAI_API_KEY=sk-...
+```
+
+### Passo 3: Suba a infraestrutura
+
+```bash
+docker compose up -d postgres qdrant minio
+```
+
+Aguarde os containers iniciarem (~10s).
+
+### Passo 4: Instale as dependências Python
+
+```bash
+uv sync
+```
+
+### Passo 5: Execute a ingestão de dados
+
+```bash
+# Gera os CSVs de vendas (dataset sintético)
+uv run python seed/generate.py
+
+# Carrega no PostgreSQL
+uv run python seed/load.py
+
+# Ingere o corpus qualitativo no Qdrant
+MINIO_ROOT_USER=minioadmin MINIO_ROOT_PASSWORD=minio-2024-secure uv run python seed/ingest.py
+```
+
+### Passo 6: Execute as migrations do Alembic
+
+```bash
+uv run alembic upgrade head
+```
+
+### Passo 7: Inicie o backend
+
+```bash
+uv run uvicorn backend.app.main:app --reload --port 8000
+```
+
+### Passo 8: Inicie o frontend (em outro terminal)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Passo 9: Acesse a aplicação
+
+- **Frontend:** http://localhost:5173
+- **API (health):** http://localhost:8000/health
+- **MinIO Console:** http://localhost:9001
+- **Qdrant Dashboard:** http://localhost:6333/dashboard
+
+---
+
+## 🧪 Rodando os Testes
+
+```bash
+# Validação completa (lint + types + tests)
+uv run ruff check --fix backend && uv run mypy backend && uv run pytest -q
+
+# Ou use o comando do harness
+/validar
+```
+
+---
+
+## 📚 Consoles e Dashboards
+
+| Serviço | URL | Credenciais |
+|---------|-----|-------------|
+| MinIO | http://localhost:9001 | `minioadmin` / `minio-2024-secure` |
+| Qdrant | http://localhost:6333/dashboard | — |
+| API Docs | http://localhost:8000/docs | — |
+
+---
+
+## 🎁 Bônus Workshop Jornada de Dados
+
+### O que você aprendeu neste workshop:
+
+1. **Agent Harness** — Como estruturar o `.claude/` com rules, hooks, MCP, subagents e skills
+2. **Do PRD às Issues** — Processo `/grill-me` → `/to-prd` → harness → `/to-issues`
+3. **Grafo Determinístico** — LangGraph com topologia fixa (planejar → quantitativo → enriquecer → relatório)
+4. **Guardrails** — SQL read-only com allowlist e LIMIT injetado
+5. **Grounding** — Toda recomendação amarrada a uma fonte rastreável
+6. **SSE Streaming** — Relatório renderizado incrementalmente no frontend
+7. **Observabilidade** — Persistência de runs no schema `harness`
+
+### Próximos passos para você:
+
+1. **Adicione Langfuse** — Observabilidade completa do LLM
+2. **Implemente mais nós** — Análise de concorrência, previsão de demanda
+3. **Conecte ao seu banco** — Substitua o dataset sintético por dados reais
+4. **Deploy** — Use o `docker-compose.yml` completo para produção
+
+### Recursos adicionais:
+
+- [Documentação Claude Code](https://docs.anthropic.com/claude-code)
+- [LangGraph Docs](https://langchain-ai.github.io/langgraph/)
+- [Skills do Matt Pocock](https://github.com/mattpocock/skills)
+- [Skills LangChain](https://github.com/langchain-ai/langchain-skills)
+
+---
+
+## 📄 Licença
+
+Este projeto foi desenvolvido para fins educacionais como parte do Workshop Agent Harness da [Jornada de Dados](https://suajornadadedados.com.br/).
+
+---
+
+<div align="center">
+
+**Desenvolvido com 🤖 por [Rafael Souza](https://github.com/Rafasansouza)**
+
+*Workshop Agent Harness · Jornada de Dados · 2025*
+
+</div>
