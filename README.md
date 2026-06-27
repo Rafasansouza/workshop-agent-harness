@@ -114,8 +114,6 @@ harness** que codifica os padrões, as validações e as métricas de um time de
 ### Pré-requisitos
 
 - **Docker** e **Docker Compose**
-- **Python 3.13** com [**uv**](https://docs.astral.sh/uv/)
-- **Node.js 18+** e **npm**
 - **Chave da API OpenAI** (para embeddings)
 
 ### Passo 1: Clone o repositório
@@ -131,65 +129,42 @@ cd workshop-agent-harness
 cp .env.example .env
 ```
 
-Edite o `.env` e adicione sua chave da OpenAI:
+Edite o `.env` e adicione sua chave da OpenAI e senha do Postgres:
 
 ```env
-OPENAI_API_KEY=...
+OPENAI_API_KEY=sk-...
+POSTGRES_PASSWORD=sua-senha-segura
 ```
 
-### Passo 3: Suba a infraestrutura
+### Passo 3: Primeira execução (seed dos dados)
 
 ```bash
-docker compose up -d postgres qdrant minio
+# Sobe infra e roda o seed (apenas na primeira vez)
+docker compose --profile seed run --rm seed
 ```
 
-Aguarde os containers iniciarem (~10s).
-
-### Passo 4: Instale as dependências Python
+### Passo 4: Suba a stack completa
 
 ```bash
-uv sync
+docker compose up -d
 ```
 
-### Passo 5: Execute a ingestão de dados
+Aguarde os containers iniciarem (~30s). As migrations do Alembic rodam automaticamente.
 
-```bash
-# Gera os CSVs de vendas (dataset sintético)
-uv run python seed/generate.py
+### Passo 5: Acesse a aplicação
 
-# Carrega no PostgreSQL
-uv run python seed/load.py
-
-# Ingere o corpus qualitativo no Qdrant
-MINIO_ROOT_USER=minioadmin MINIO_ROOT_PASSWORD=minio-2024-secure uv run python seed/ingest.py
-```
-
-### Passo 6: Execute as migrations do Alembic
-
-```bash
-uv run alembic upgrade head
-```
-
-### Passo 7: Inicie o backend
-
-```bash
-uv run uvicorn backend.app.main:app --reload --port 8000
-```
-
-### Passo 8: Inicie o frontend (em outro terminal)
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### Passo 9: Acesse a aplicação
-
-- **Frontend:** http://localhost:5173
-- **API (health):** http://localhost:8000/health
+- **Aplicação:** http://localhost:8080
+- **API Docs:** http://localhost:8080/api/docs
 - **MinIO Console:** http://localhost:9001
 - **Qdrant Dashboard:** http://localhost:6333/dashboard
+
+### Parar os serviços
+
+```bash
+docker compose down
+```
+
+> **Nota:** Os dados são persistidos em volumes Docker. Use `docker compose down -v` apenas se quiser apagar tudo e começar do zero.
 
 ---
 
@@ -209,9 +184,10 @@ uv run ruff check --fix backend && uv run mypy backend && uv run pytest -q
 
 | Serviço | URL | Credenciais |
 |---------|-----|-------------|
-| MinIO | http://localhost:9001 | `minioadmin` / `minio-2024-secure` |
+| Aplicação | http://localhost:8080 | — |
+| API Docs | http://localhost:8080/api/docs | — |
+| MinIO | http://localhost:9001 | `minioadmin` / valor do `.env` |
 | Qdrant | http://localhost:6333/dashboard | — |
-| API Docs | http://localhost:8000/docs | — |
 
 ---
 
