@@ -1,0 +1,98 @@
+# Agente Analítico de Vendas — esqueleto andante (issue #1).
+# Cadeia: nginx (único exposto) -> api (FastAPI) -> postgres (vazio).
+# RNF-05: sobe via `docker compose up -d`. Antes: `cp .env.example .env` e ajuste os segredos.
+# Stores: postgres (schema negocio via seed/), qdrant (3 coleções) e minio (corpus bruto).
+
+name: workshop
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: workshop-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-workshop}
+      POSTGRES_USER: ${POSTGRES_USER:-workshop}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-workshop} -d ${POSTGRES_DB:-workshop}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:latest          # (pinar versão em produção — RNF-05)
+    container_name: workshop-qdrant
+    restart: unless-stopped
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"       # REST/HTTP
+      - "${QDRANT_GRPC_PORT:-6334}:6334"  # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  minio:
+    image: minio/minio:latest            # (pinar versão em produção — RNF-05)
+    container_name: workshop-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"           # API S3
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"   # Console web
+    volumes:
+      - minio_data:/data
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: workshop-api
+    restart: unless-stopped
+    # Chaves (ANTHROPIC/OPENAI/AGENTE_RO/Langfuse) vêm do .env. `environment` abaixo
+    # tem precedência sobre env_file e fixa os hosts internos da rede do compose.
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-workshop}:${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}@postgres:5432/${POSTGRES_DB:-workshop}
+      QDRANT_URL: http://qdrant:6333
+      # Host interno do MinIO (o .env usa localhost:9000, válido só fora do compose).
+      MINIO_ENDPOINT: minio:9000
+      MINIO_BUCKET_RELATORIOS: ${MINIO_BUCKET_RELATORIOS:-relatorios}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    # sem porta publicada: o acesso externo é só pelo nginx (prova o hop da issue #1)
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  nginx:
+    # Multi-stage: builda a SPA (frontend React+Vite) e serve estáticos + proxy da api.
+    build:
+      context: .
+      dockerfile: infra/nginx/Dockerfile
+    container_name: workshop-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pg_data:
+  qdrant_data:
+  minio_data:

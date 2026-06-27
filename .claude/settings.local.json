@@ -1,0 +1,6 @@
+{
+  "enabledMcpjsonServers": [
+    "negocio-ro"
+  ],
+  "enableAllProjectMcpServers": true
+}
