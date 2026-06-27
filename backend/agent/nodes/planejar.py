@@ -62,26 +62,67 @@ LIMIT 10
 """
 
 
+MESES = {
+    "janeiro": 1, "fevereiro": 2, "março": 3, "marco": 3, "abril": 4,
+    "maio": 5, "junho": 6, "julho": 7, "agosto": 8, "setembro": 9,
+    "outubro": 10, "novembro": 11, "dezembro": 12,
+    "jan": 1, "fev": 2, "mar": 3, "abr": 4, "mai": 5, "jun": 6,
+    "jul": 7, "ago": 8, "set": 9, "out": 10, "nov": 11, "dez": 12,
+}
+
+
 def _resolver_periodo_alvo(pergunta: str) -> tuple[dict[str, int], list[str]]:
     """Resolve o período-alvo a partir da pergunta.
 
-    Default: próximo mês (mês atual + 1), tratando virada de ano.
+    Tenta extrair mês/ano da pergunta. Default: próximo mês.
 
     Returns:
         Tuple de (periodo_alvo, premissas)
     """
-    hoje = date.today()
-    ano = hoje.year
-    mes = hoje.month + 1
+    import re
 
-    # Trata virada de ano
-    if mes > 12:
-        mes = 1
-        ano += 1
+    pergunta_lower = pergunta.lower()
+    ano_extraido = None
+    mes_extraido = None
+
+    # Tenta extrair ano (4 dígitos)
+    match_ano = re.search(r"\b(20\d{2})\b", pergunta)
+    if match_ano:
+        ano_extraido = int(match_ano.group(1))
+
+    # Tenta extrair mês por nome
+    for nome_mes, num_mes in MESES.items():
+        if nome_mes in pergunta_lower:
+            mes_extraido = num_mes
+            break
+
+    # Tenta extrair mês numérico (ex: "05/2026", "2026-05")
+    if mes_extraido is None:
+        match_mes_num = re.search(r"\b(0?[1-9]|1[0-2])[/-](20\d{2})\b", pergunta)
+        if match_mes_num:
+            mes_extraido = int(match_mes_num.group(1))
+            ano_extraido = int(match_mes_num.group(2))
+        else:
+            match_mes_num2 = re.search(r"\b(20\d{2})[/-](0?[1-9]|1[0-2])\b", pergunta)
+            if match_mes_num2:
+                ano_extraido = int(match_mes_num2.group(1))
+                mes_extraido = int(match_mes_num2.group(2))
+
+    # Se não extraiu, usa default (próximo mês)
+    hoje = date.today()
+    if mes_extraido is None:
+        mes = hoje.month + 1
+        ano = hoje.year if mes <= 12 else hoje.year + 1
+        mes = mes if mes <= 12 else 1
+        premissa_periodo = f"Período-alvo assumido: {mes:02d}/{ano} (próximo mês)"
+    else:
+        mes = mes_extraido
+        ano = ano_extraido if ano_extraido else hoje.year
+        premissa_periodo = f"Período-alvo: {mes:02d}/{ano} (extraído da pergunta)"
 
     periodo = {"ano": ano, "mes": mes}
     premissas = [
-        f"Período-alvo assumido: {mes:02d}/{ano} (próximo mês)",
+        premissa_periodo,
         "Escopo: todas as regiões e canais (pergunta não especificou filtro)",
     ]
 

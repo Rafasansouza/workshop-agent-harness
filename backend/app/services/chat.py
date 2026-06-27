@@ -9,10 +9,16 @@ import uuid
 from collections.abc import AsyncGenerator
 from typing import Any
 
+from sqlalchemy.ext.asyncio import create_async_engine
+
 from backend.agent.nodes import enriquecer, perna_quantitativa, planejar, relatorio
 from backend.agent.state import AgentState
+from backend.app.config import settings
 
 logger = logging.getLogger(__name__)
+
+# Engine async para conexões com o banco
+_engine = create_async_engine(settings.database_url, pool_pre_ping=True)
 
 
 async def executar_grafo(
@@ -37,10 +43,11 @@ async def executar_grafo(
     }
 
     try:
-        # 1. Planejar
+        # 1. Planejar (com conexão ao banco para buscar KPIs)
         yield {"event": "status", "data": {"node": "planejar", "message": "Identificando KPIs..."}}
         await asyncio.sleep(0.1)  # Permite flush do evento
-        state = await planejar(state)
+        async with _engine.connect() as conn:
+            state = await planejar(state, conn=conn)
 
         # 2. Perna quantitativa
         yield {
